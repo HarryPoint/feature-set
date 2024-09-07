@@ -7,11 +7,11 @@
     <script src="./AudioAnalyser.js"></script>
   </head>
   <body class="bg-gray-950">
-    <div class="h-1/2">
+    <div class="h-full">
       <canvas id="canvas" class="w-full h-full">显示效果</canvas>
     </div>
-    <div class="flex justify-center gap-4">
-      <audio id="audio" src="./music.mp3" controls></audio>
+    <div class="fixed top-0 w-full flex justify-end gap-4">
+      <audio id="audio" src="./music.mp3" controls autoplay loop></audio>
       <button id="btn" class="bg-gray-400 text-gray-950 rounded-full px-3">
         音频模式
       </button>
@@ -21,7 +21,7 @@
       const audio = document.getElementById("audio");
       const canvas = document.getElementById("canvas");
       const width = window.innerWidth * devicePixelRatio;
-      const height = (window.innerHeight * devicePixelRatio * 1) / 2;
+      const height = (window.innerHeight * devicePixelRatio * 2) / 3;
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
@@ -29,15 +29,19 @@
       let audioAnalyserIns = new AudioAnalyser();
       audioAnalyserIns.registerCallback((dataArray) => {
         ctx.clearRect(0, 0, width, height);
-        const len = dataArray.length / 1.5;
-        const barWidth = width / len;
+        const len = dataArray.length / 2;
+        const barWidth = width / len / 2;
         for (let i = 0; i < len; i++) {
           const data = dataArray[i];
           const x = i * barWidth;
-          const barHeight = (data / 255) * height;
+          const barHeight = (data / 255) * ((height * 2) / 3);
           const y = height - barHeight;
-          ctx.fillStyle = `rgb(${(255 * i) / len}, ${(255 * i) / len}, 255)`;
-          ctx.fillRect(x, y, barWidth - 5, barHeight);
+          const percent = i / len;
+          ctx.fillStyle = `rgb(${255 * percent}, ${255 * (1 - percent)}, ${
+            (255 * percent * 1) / 2
+          })`;
+          ctx.fillRect(x + width / 2, y, barWidth - 5, barHeight);
+          ctx.fillRect(width / 2 - x, y, barWidth - 5, barHeight);
         }
       });
       btn.onclick = () => {
