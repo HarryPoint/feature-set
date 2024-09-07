@@ -27,19 +27,25 @@
       const ctx = canvas.getContext("2d");
       let currentMode = "audio";
       let audioAnalyserIns = new AudioAnalyser();
+      let last = 360;
       audioAnalyserIns.registerCallback((dataArray) => {
         ctx.clearRect(0, 0, width, height);
-        const len = dataArray.length / 2;
+        const len = dataArray.length / 2.5;
         const barWidth = width / len / 2;
         for (let i = 0; i < len; i++) {
-          const data = dataArray[i];
+          const data = dataArray[i + 5];
+          console.log("data: ", data > 255);
           const x = i * barWidth;
-          const barHeight = (data / 255) * ((height * 2) / 3);
+          const barHeight = (data / 255) * ((height * 3) / 4);
           const y = height - barHeight;
           const percent = i / len;
-          ctx.fillStyle = `rgb(${255 * percent}, ${255 * (1 - percent)}, ${
-            (255 * percent * 1) / 2
-          })`;
+          let h = (360 * percent + last) % 360;
+          last -= 0.05;
+          last = last < 0 ? 360 : last;
+          const s = 100;
+          const l = 50;
+
+          ctx.fillStyle = `hsl(${h}, ${s}%, ${l}%)`;
           ctx.fillRect(x + width / 2, y, barWidth - 5, barHeight);
           ctx.fillRect(width / 2 - x, y, barWidth - 5, barHeight);
         }
