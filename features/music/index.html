@@ -1,0 +1,59 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-950">
+    <div class="h-1/2">
+      <canvas id="canvas" class="w-full h-full">显示效果</canvas>
+    </div>
+    <div class="flex justify-center">
+      <audio id="audio" src="./music.mp3" controls />
+    </div>
+    <script>
+      const audio = document.getElementById("audio");
+      const canvas = document.getElementById("canvas");
+      const width = window.innerWidth * devicePixelRatio;
+      const height = (window.innerHeight * devicePixelRatio * 1) / 2;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      let initFlag = false;
+      let analyser;
+      let bufferLength;
+      let dataArray;
+      audio.onplay = () => {
+        if (initFlag) return;
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaElementSource(audio);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 512;
+        bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        initFlag = true;
+      };
+
+      const renderFrame = () => {
+        requestAnimationFrame(renderFrame);
+        if (!initFlag) return;
+        ctx.clearRect(0, 0, width, height);
+        analyser.getByteFrequencyData(dataArray);
+        const len = bufferLength / 2;
+        const barWidth = width / len;
+        for (let i = 0; i < len; i++) {
+          const data = dataArray[i];
+          const x = i * barWidth;
+          const barHeight = (data / 255) * height;
+          const y = height - barHeight;
+          ctx.fillStyle = `rgb(${(255 * i) / len}, ${(255 * i) / len}, 255)`;
+          ctx.fillRect(x, y, barWidth - 5, barHeight);
+        }
+      };
+      renderFrame();
+    </script>
+  </body>
+</html>
